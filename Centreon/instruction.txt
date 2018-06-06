@@ -1,40 +1,42 @@
 #!bin/bash
 # https://documentation-fr.centreon.com/docs/centreon/en/2.8.x/installation/from_iso.html
+# bash centreon.sh
 
-# vi /etc/sysconfig/network-scripts/ifcfg-eth0
+ifconfig eth0
+sleep 5
+echo "votre ip ? : "
+read $ipv4
 
-## DEVICE=eth0               ## Nom de l'interface
-##BOOTPROTO=static          ## Passer en mode static et non DHCP
-##IPADDR=192.168.224.209      ## Adresse IP de la machine
-##NETMASK=255.255.248.0   
-##GATEWAY=192.168.224.254  ## Masque sous-reseau
+## configuration proxy system
+echo "BOOTPROTO=dhcp" | sed "s|BOOTPROTO=dhcp|BOOTPROTO=static|" /etc/sysconfig/network-scripts/ifcfg-eth0 ## Passer en mode static et non DHCP
+echo "IPADDR=$ipv4|" >> /etc/sysconfig/network-scripts/ifcfg-eth0      ## Adresse IP de la machine
+echo "NETMASK=255.255.248.0" >> /etc/sysconfig/network-scripts/ifcfg-eth0 ## Masque de sous réseau
+echo "GATEWAY=192.168.224.254" >> /etc/sysconfig/network-scripts/ifcfg-eth0 ## Proxy
 
+## vérification
+clear
+cat /etc/sysconfig/network-scripts/ifcfg-eth0
 
-# vi /etc/sysconfig/network
+## configuration YUM
+echo "proxy=http://192.168.224.254:3128" >> /etc/yum.conf
+yum -y update
 
-##NETWORKING=yes                        ## Activer le reseau
-##NETWORKING_IPV6=no                    ## Activation ou pas de l'ipv6
-##HOSTNAME=Centreon                 ## Le nom de la machine
-##GATEWAY=192.168.224.254                 ## Adresse ip de votre passerelle
-
-# yum update
-# yum -y install centreon-lang-fr_FR
-
-# /etc/php.ini
-# date.time = Europe/Paris
-
-# /etc/my.cnf.d/centreon.cnf
-# open_files_limit = 320000
-
-# /etc/my.cnf
-
-# [mysqld]
-# innodb_file_per_table=1
-# service mysql restart
+## installation phpmyadmin
+rpm -iUvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+yum -y update
+yum -y install phpmyadmin
 
 
+## installation langue fr pour centreon
+yum -y install centreon-lang-fr_FR
 
-# rpm -iUvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-# yum -y update
-# yum -y install phpmyadmin
+
+## patch bug Centreon
+echo sed "s|;date.time =|date.time = Europe/Paris|" /etc/php.ini
+echo sed "s|open_files_limit = 32000|open_files_limit = 3200000|" /etc/my.cnf.d/centreon.cnf
+echo "[mysqld]" >> /etc/my.cnf
+echo "innodb_file_per_table=1" >> /etc/my.cnf
+service mysql restart
+reboot
+
 
