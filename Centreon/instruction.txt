@@ -2,6 +2,7 @@
 # https://documentation-fr.centreon.com/docs/centreon/en/2.8.x/installation/from_iso.html
 # bash centreon.sh
 # proxy http : export http_proxy="http://192.168.224.254:3128"
+# L interface sous Firefox.exe
 
 ifconfig eth0
 sleep 5
